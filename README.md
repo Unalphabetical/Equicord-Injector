@@ -58,6 +58,20 @@ run, so you update them by pushing to GitHub and re-sharing the same package.
 > **plugin** updates (the in-app Updates tab updates Equicord, not your
 > plugins). To ship a plugin change, push to GitHub and tell them to re-run it.
 
+## Cleaning up the portable tools
+
+By default the installer keeps its portable Node/Git/pnpm (and the Equicord
+checkout) in `%LOCALAPPDATA%\EquicordPluginInjector` so Equicord's in-app
+**Updates** tab keeps working.
+
+If you'd rather not keep ~200 MB of tools around (and are happy getting
+updates only by re-running `INSTALL.bat`), edit `config.json` in the
+`EquicordInjector` folder and set `"cleanupPortableTools": true`. After a
+successful install it deletes the portable tools. This is read by the
+installer every run, so you can set it before zipping/sharing the folder.
+**Warning:** with this on, Settings > **Updates** stops working, since that
+tab calls the portable git/node.
+
 ## Developer: how to distribute
 
 1. Push your plugin changes to

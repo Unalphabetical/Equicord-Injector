@@ -48,6 +48,10 @@ IMPORTANT: the installer keeps everything it needs in
 and its portable tools). Do NOT delete that folder, or the Updates tab
 and future installs will break.
 
+(If whoever gave you this enabled "cleanup" in config.json, the portable
+tools are deleted after install to save space - then you update by re-running
+INSTALL.bat.)
+
 PLEASE DO NOT
 -------------
 - Do not delete %LOCALAPPDATA%\EquicordPluginInjector.

@@ -23,6 +23,29 @@ Write-Host "==============================================" -ForegroundColor Cya
 
 try {
 
+    # ---------- USER CONFIGURATION ----------
+    # Settings are read from config.json (in the same folder as this script),
+    # so you can change them without editing the script. See that file.
+    #   "cleanupPortableTools": true/false
+    #     When true, the downloaded portable tools (Node, Git and pnpm) are
+    #     deleted from %LOCALAPPDATA%\EquicordPluginInjector after a successful
+    #     install. This frees ~200 MB of disk space but ALSO breaks Equicord's
+    #     in-app "Updates" tab (Settings > Updates), because that tab calls the
+    #     portable git and node stored here; users must re-run INSTALL.bat to
+    #     update instead. Defaults to false so the Updates tab keeps working.
+    $ConfigFile = Join-Path $PSScriptRoot "config.json"
+    $CleanupPortableTools = $false
+    if (Test-Path $ConfigFile) {
+        try {
+            $cfg = Get-Content -LiteralPath $ConfigFile -Raw | ConvertFrom-Json
+            $val = $cfg.cleanupPortableTools
+            if ($null -ne $val) { $CleanupPortableTools = ($val -eq $true) }
+        }
+        catch {
+            Warn("config.json could not be read (invalid JSON?). Using default settings.")
+        }
+    }
+
     # ---------- Locations, versions, sources ----------
     $PluginRepoOwner   = "Unalphabetical"
     $PluginRepoName    = "Equicord-Plugin"
@@ -231,6 +254,18 @@ try {
     finally {
         Pop-Location
         if ($null -ne $origPath) { $env:PATH = $origPath }
+    }
+
+    # ---------- 11. Optional cleanup of the portable tools ----------
+    if ($CleanupPortableTools) {
+        Step "Cleaning up the portable tools (only if you opted in)"
+        if (Test-Path $ToolsDir) {
+            Remove-Item -LiteralPath $ToolsDir -Recurse -Force
+            Ok("Removed the portable tools (Node, Git, pnpm) - ~200 MB freed")
+            Warn("The in-app Updates tab will no longer work. Re-run INSTALL.bat to update instead.")
+        } else {
+            Ok("Portable tools already removed")
+        }
     }
 
     # ---------- Done ----------
