@@ -1,3 +1,4 @@
 {
-    "cleanupPortableTools": false
+    "cleanupPortableTools": false,
+    "autoUpdateInjector": true
 }

@@ -34,7 +34,13 @@ HOW TO INSTALL
 
 KEEPING IT UPDATED
 ------------------
-You have two easy ways to update:
+Every time you run INSTALL.bat the installer quickly checks GitHub and, if a
+newer version of itself exists, downloads it and re-runs automatically. So the
+tool is always current without you downloading a new copy.
+(For technical users: this can be turned off by setting "autoUpdateInjector":
+false in config.json.)
+
+You have two easy ways to update Discord/plugins:
 
 1) IN DISCORD: Settings (gear icon) > Updates. Click "Check for Updates"
    and, if there's something new, "Update & Rebuild". Wait for it to

@@ -14,6 +14,69 @@ function Warn([string]$msg) {
     Write-Host "  [!] $msg" -ForegroundColor Yellow
 }
 
+# Self-update: replaces this installer (plus INSTALL.bat / README.txt / config.json)
+# with the latest versions straight from the GitHub repo, then the script re-runs
+# itself. Users therefore never need to re-download or re-share the zip to get
+# installer fixes. Purely additive - if GitHub is unreachable it just carries on
+# with the copy they already have.
+# Returns $true if install.ps1 itself was updated (caller should re-run the new
+# script), otherwise $false (INSTALL.bat / README / config may still have been
+# refreshed in place).
+function Update-InjectorFiles {
+    $owner = "Unalphabetical"
+    $name  = "Equicord-Injector"
+    # Files, relative to the 'EquicordInjector' folder in the repo, that get
+    # autorefreshed. config.json is included too, but your local copy is first
+    # backed up to config.json.pre-update so no per-machine setting is lost.
+    $files = @("install.ps1", "INSTALL.bat", "README.txt", "config.json")
+    $relaunch = $false
+    try {
+        $info = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$name" -Headers @{ "User-Agent" = "Equicord-Plugin-Injector" }
+        $branch = $info.default_branch
+    }
+    catch {
+        Warn("Could not check for an installer update (GitHub unreachable?). Using the version you already have.")
+        return $relaunch
+    }
+
+    $tmpRoot = Join-Path $env:TEMP "EquicordInjector_update"
+    New-Item -ItemType Directory -Force -Path $tmpRoot | Out-Null
+    $updated = @()
+    try {
+        foreach ($f in $files) {
+            $rawPath = "EquicordInjector/$f"
+            $local   = Join-Path $PSScriptRoot $f
+            $tmp     = Join-Path $tmpRoot $f
+            $url     = "https://raw.githubusercontent.com/$owner/$name/$branch/$rawPath"
+            try {
+                Invoke-WebRequest -Uri $url -OutFile $tmp -UseBasicParsing
+            }
+            catch {
+                Warn("Could not download the latest '$f' - keeping your current copy.")
+                continue
+            }
+            if (Test-Path $local) {
+                $same = (Get-FileHash -Path $local -Algorithm SHA256).Hash -eq (Get-FileHash -Path $tmp -Algorithm SHA256).Hash
+                if ($same) { continue }
+            }
+            if ($f -eq "config.json" -and (Test-Path $local)) {
+                Copy-Item -LiteralPath $local -Destination "$local.pre-update" -Force
+                Ok("Backed up your old config to 'config.json.pre-update'")
+            }
+            Copy-Item -LiteralPath $tmp -Destination $local -Force
+            $updated += $f
+            if ($f -eq "install.ps1") { $relaunch = $true }
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $tmpRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    if ($updated.Count -gt 0) {
+        Ok("Updated installer files: $($updated -join ', ').")
+    }
+    return $relaunch
+}
+
 $host.UI.RawUI.WindowTitle = "Equicord Plugin Injector"
 
 Write-Host ""
@@ -35,11 +98,14 @@ try {
     #     update instead. Defaults to false so the Updates tab keeps working.
     $ConfigFile = Join-Path $PSScriptRoot "config.json"
     $CleanupPortableTools = $false
+    $AutoUpdateInjector    = $true
     if (Test-Path $ConfigFile) {
         try {
             $cfg = Get-Content -LiteralPath $ConfigFile -Raw | ConvertFrom-Json
             $val = $cfg.cleanupPortableTools
             if ($null -ne $val) { $CleanupPortableTools = ($val -eq $true) }
+            $val = $cfg.autoUpdateInjector
+            if ($null -ne $val) { $AutoUpdateInjector = ($val -eq $true) }
         }
         catch {
             Warn("config.json could not be read (invalid JSON?). Using default settings.")
@@ -81,6 +147,16 @@ try {
     $NpmCli       = Join-Path $ToolsDir "$NodeFolder\node_modules\npm\bin\npm-cli.js"
 
     New-Item -ItemType Directory -Force -Path $WorkRoot, $ToolsDir, $ZipDir | Out-Null
+
+    # ---------- 0. Self-update the installer itself ----------
+    # Pulls the newest installer from GitHub and, if install.ps1 changed,
+    # re-runs the fresh copy in this same window. Safe to disable with
+    # "autoUpdateInjector": false in config.json (e.g. while developing).
+    if ($AutoUpdateInjector -and (Update-InjectorFiles)) {
+        Ok("The installer updated to the latest version - running it now...")
+        & (Join-Path $PSScriptRoot "install.ps1")
+        exit 0
+    }
 
     # ---------- 1. Checks ----------
     Step "1/10  Checking things first"

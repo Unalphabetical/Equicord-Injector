@@ -58,6 +58,27 @@ run, so you update them by pushing to GitHub and re-sharing the same package.
 > **plugin** updates (the in-app Updates tab updates Equicord, not your
 > plugins). To ship a plugin change, push to GitHub and tell them to re-run it.
 
+## Auto-updating the installer itself
+
+The installer also keeps **itself** current. At the very start of each run it
+queries
+[`Unalphabetical/Equicord-Injector`](https://github.com/Unalphabetical/Equicord-Injector),
+downloads the latest copies of `install.ps1`, `INSTALL.bat`, `README.txt` and
+`config.json` straight from GitHub, and — if `install.ps1` changed — re-runs
+itself in the same window with the fresh version. Users never need to re-share
+or re-download the zip to receive installer fixes.
+
+Details:
+
+- Fails gracefully: if GitHub is unreachable it just proceeds with the copy
+already on disk.
+- Your local `config.json` is backed up to `config.json.pre-update` before it's
+replaced, so a per-machine setting is never lost silently.
+- Can be disabled for development by setting `"autoUpdateInjector": false` in
+`config.json`.
+- The updater only needs plain PowerShell (no Git/Node), so it works on stock
+Windows.
+
 ## Cleaning up the portable tools
 
 By default the installer keeps its portable Node/Git/pnpm (and the Equicord
