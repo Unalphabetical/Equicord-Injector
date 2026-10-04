@@ -63,9 +63,10 @@ run, so you update them by pushing to GitHub and re-sharing the same package.
 The installer also keeps **itself** current. At the very start of each run it
 queries
 [`Unalphabetical/Equicord-Injector`](https://github.com/Unalphabetical/Equicord-Injector),
-downloads the latest copies of `install.ps1`, `INSTALL.bat`, `README.txt` and
-`config.json` straight from GitHub, and — if `install.ps1` changed — re-runs
-itself in the same window with the fresh version. Users never need to re-share
+downloads the latest copies of `install.ps1`, `INSTALL.bat`, `cleanup.ps1`,
+`cleanup.bat`, `README.txt` and `config.json` straight from GitHub, and — if
+`install.ps1` changed — re-runs itself in the same window with the fresh
+version. Users never need to re-share
 or re-download the zip to receive installer fixes.
 
 Details:
@@ -92,6 +93,12 @@ successful install it deletes the portable tools. This is read by the
 installer every run, so you can set it before zipping/sharing the folder.
 **Warning:** with this on, Settings > **Updates** stops working, since that
 tab calls the portable git/node.
+
+Users can also do this on demand, without re-installing: `CLEANUP.bat` (in
+the `EquicordInjector` folder) deletes just the portable tools and leaves
+Discord, Equicord and the user's plugins untouched — Discord does not even
+need to be closed. It reports how much space it freed and tells the user to
+re-run `INSTALL.bat`, which re-downloads the tools, to update again.
 
 ## Developer: how to distribute
 

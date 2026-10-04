@@ -52,7 +52,30 @@ You have two easy ways to update Discord/plugins:
 IMPORTANT: the installer keeps everything it needs in
 %LOCALAPPDATA%\EquicordPluginInjector (the Equicord checkout, the plugins,
 and its portable tools). Do NOT delete that folder, or the Updates tab
-and future installs will break.
+and future installs will break. (CLEANUP.bat below removes just the
+portable tools if you want the space back.)
+
+HOW TO FREE UP SPACE (REMOVE THE PORTABLE TOOLS)
+------------------------------------------------
+The installer carries its own copies of Node.js, Git and pnpm, kept in
+%LOCALAPPDATA%\EquicordPluginInjector\tools - roughly 200 MB in total.
+
+1) Right-click "CLEANUP.bat" and choose "Run".
+
+2) It asks you to confirm, then deletes just those portable copies.
+
+3) That is all. Discord does NOT need to be closed, and Equicord and your
+   plugins stay installed and keep working exactly as before.
+
+THE ONE TRADE-OFF
+------------------
+Discord's Settings > Updates tab calls that portable Git & Node, so it
+stops working once they are gone. When you want to update again, just
+re-run INSTALL.bat - it re-downloads them automatically (only the first
+time you do this).
+
+(To remove Equicord from Discord altogether, reinstall Discord from
+discord.com - that restores its original files.)
 
 (If whoever gave you this enabled "cleanup" in config.json, the portable
 tools are deleted after install to save space - then you update by re-running

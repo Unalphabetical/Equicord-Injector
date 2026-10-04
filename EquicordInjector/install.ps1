@@ -28,7 +28,7 @@ function Update-InjectorFiles {
     # Files, relative to the 'EquicordInjector' folder in the repo, that get
     # autorefreshed. config.json is included too, but your local copy is first
     # backed up to config.json.pre-update so no per-machine setting is lost.
-    $files = @("install.ps1", "INSTALL.bat", "README.txt", "config.json")
+    $files = @("install.ps1", "INSTALL.bat", "cleanup.ps1", "cleanup.bat", "README.txt", "config.json")
     $relaunch = $false
     try {
         $info = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$name" -Headers @{ "User-Agent" = "Equicord-Plugin-Injector" }
